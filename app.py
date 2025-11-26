@@ -63,10 +63,8 @@ def create_app(test_config=None):
     return app
 
 
-# Expose a module-level application for convenience with certain tools
 app = create_app()
 
 
 if __name__ == "__main__":
-    # Running ``python app.py`` starts the development server.
     app.run(debug=True)

@@ -1,4 +1,4 @@
-"""Minimal Flask application setup for the SQLAlchemy assignment."""
+ 
 from flask import Flask, jsonify, request
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -7,14 +7,7 @@ from config import Config
 
 db = SQLAlchemy()
 migrate = Migrate()
-
-
 def create_app(test_config=None):
-    """Application factory used by Flask and the tests.
-
-    The optional ``test_config`` dictionary can override settings such as
-    the database URL to keep student tests isolated.
-    """
 
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -29,8 +22,6 @@ def create_app(test_config=None):
 
     @app.route("/")
     def index():
-        """Simple sanity check route."""
-
         return jsonify({"message": "Welcome to the Flask + SQLAlchemy assignment"})
 
     @app.route("/users", methods=["GET", "POST"])
@@ -64,7 +55,6 @@ def create_app(test_config=None):
 
 
 app = create_app()
-
 
 if __name__ == "__main__":
     app.run(debug=True)

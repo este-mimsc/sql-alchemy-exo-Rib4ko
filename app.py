@@ -5,9 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 from config import Config
 
-# These extension instances are shared across the app and models
-# so that SQLAlchemy can bind to the application context when the
-# factory runs.
 db = SQLAlchemy()
 migrate = Migrate()
 
@@ -27,9 +24,8 @@ def create_app(test_config=None):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Import models here so SQLAlchemy is aware of them before migrations
-    # or ``create_all`` run. Students will flesh these out in ``models.py``.
-    import models  # noqa: F401
+    import models
+    from models import User, Post
 
     @app.route("/")
     def index():
@@ -39,29 +35,30 @@ def create_app(test_config=None):
 
     @app.route("/users", methods=["GET", "POST"])
     def users():
-        """List or create users.
-
-        TODO: Students should query ``User`` objects, serialize them to JSON,
-        and handle incoming POST data to create new users.
-        """
-
-        return (
-            jsonify({"message": "TODO: implement user listing/creation"}),
-            501,
-        )
+        if request.method == "POST":
+            data = request.get_json()
+            user = User(username=data["username"])
+            db.session.add(user)
+            db.session.commit()
+            return jsonify({"id": user.id, "username": user.username}), 201
+        
+        users_list = User.query.all()
+        return jsonify([{"id": u.id, "username": u.username} for u in users_list]), 200
 
     @app.route("/posts", methods=["GET", "POST"])
     def posts():
-        """List or create posts.
-
-        TODO: Students should query ``Post`` objects, include user data, and
-        allow creating posts tied to a valid ``user_id``.
-        """
-
-        return (
-            jsonify({"message": "TODO: implement post listing/creation"}),
-            501,
-        )
+        if request.method == "POST":
+            data = request.get_json()
+            user = User.query.get(data["user_id"])
+            if not user:
+                return jsonify({"error": "User not found"}), 400
+            post = Post(title=data["title"], content=data["content"], user_id=data["user_id"])
+            db.session.add(post)
+            db.session.commit()
+            return jsonify({"id": post.id, "title": post.title, "content": post.content, "user_id": post.user_id, "username": user.username}), 201
+        
+        posts_list = Post.query.all()
+        return jsonify([{"id": p.id, "title": p.title, "content": p.content, "user_id": p.user_id, "username": p.user.username} for p in posts_list]), 200
 
     return app
 
